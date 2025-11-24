@@ -43,7 +43,7 @@ jobs:
         run: terraform validate
       
       - name: Terraform plan
-        if: ${{github.event.inputs.action =="plan" || github.event.inputs.action == "apply"}}
+        if: ${{github.event.inputs.action == "plan" || github.event.inputs.action == "apply"}}
         run: terraform plan -out=tfplan
       
       - name: Terraform apply
