@@ -1,10 +1,10 @@
-name: Terrform CI (Choice)
+name: Terraform CI (Choice)
 
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: "Choose Terraform Action"
+        description: "Choose Terraform action"
         required: true
         default: 'plan'
         options:
@@ -12,48 +12,53 @@ on:
           - apply
           - destroy
       confirm:
-        description: "Confirm destructive action (required for destroy and apply)"
+        description: 'Confirm destructive action (required for destroy/apply)'
         required: false
         default: 'no'
         options:
           - yes
-          - no
+          - no    
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-      AWS_DEFAULT_REGION: us-east-1
-
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
-      - name: Setup Terrform
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 # change if needed
+
+
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Terrform init
+      - name: Terraform Init
         run: terraform init
-      
-      - name: Terrform Validate
+
+      - name: Terraform Validate
         run: terraform validate
-      
-      - name: Terraform plan
-        if: ${{github.event.inputs.action == "plan" || github.event.inputs.action == "apply"}}
+
+      - name: Terraform Plan
+        if: ${{ github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'}}
         run: terraform plan -out=tfplan
-      
-      - name: Terraform apply
-        if: ${{github.event.inputs.action == 'apply' && github.event.inputs.confirm == 'yes'}}
+
+      # Only apply when action == 'apply' and user confirmed
+      - name: Terraform Apply
+        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.confirm == 'yes'}}
+        # optional safeguard: run only on main branch
         run: terraform apply -auto-approve tfplan
 
-      - name: Terraform Destory (Plan)
-        if: ${{github.event.input.action == 'destroy'}}
+      # Destroy requires explicit action == 'destroy' AND confirm == 'yes'
+      - name: Terraform Destroy (plan)
+        if: ${{ github.event.inputs.action == 'destroy' }}
         run: terraform plan -destroy -out=destroyplan
-      
-      - name: Terraform Destory
-        if: ${{github.event.inputs.action == 'destroy' && github.event.inputs.confirm == 'yes'}}
-        run: terraform destroy -auto-approve destroyplan
+
+      - name: Terraform Destroy (apply)
+        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.confirm == 'yes' }}
+        run: terraform apply -auto-approve destroyplan
