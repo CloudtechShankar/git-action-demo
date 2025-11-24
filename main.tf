@@ -16,7 +16,7 @@ resource "aws_subnet" "public-1" {
 
 resource "aws_instance" "name" {
     ami = "ami-0fa3fe0fa7920f68e"
-    instance_type = "t2.micro"
+    instance_type = "t3.micro"
     tags = {
       Name = "TF-EC2"
     }
