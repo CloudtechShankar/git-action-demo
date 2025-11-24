@@ -55,10 +55,10 @@ jobs:
         run: terraform apply -auto-approve tfplan
 
       # Destroy requires explicit action == 'destroy' AND confirm == 'yes'
-      - name: Terraform Destroy (plan)
-        if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform plan -destroy -out=destroyplan
+      # - name: Terraform Destroy (plan)
+      #   if: ${{ github.event.inputs.action == 'destroy' }}
+      #   run: terraform plan -destroy -out=destroyplan
 
-      - name: Terraform Destroy (apply)
-        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.confirm == 'yes' }}
-        run: terraform apply -auto-approve destroyplan
+      # - name: Terraform Destroy (apply)
+      #   if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.confirm == 'yes' }}
+      #   run: terraform apply -auto-approve destroyplan
